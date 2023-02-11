@@ -276,6 +276,7 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
+    console.log("her6")
     token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
     console.log('Must use physical device for Push Notifications');
