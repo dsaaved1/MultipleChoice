@@ -46,9 +46,11 @@ const ChatSettingsScreen = props => {
                 return;
             }
 
+            
             selectedUserData.push(storedUsers[uid]);
         });
 
+        //firebase action
         addUsersToChat(userData, selectedUserData, chatData);
 
     }, [selectedUsers]);

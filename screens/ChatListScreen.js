@@ -62,8 +62,12 @@ const ChatListScreen = props => {
                 newChatData: {
                     users: chatUsers,
                     isGroupChat: selectedUserList !== undefined,
-                    chatName
+                    
                 }
+            }
+
+            if (chatName) {
+                navigationProps.newChatData.chatName = chatName
             }
         }
         
@@ -75,7 +79,7 @@ const ChatListScreen = props => {
     
     return <PageContainer>
 
-        <PageTitle text="Groups" />
+        <PageTitle text="Chats" />
 
             <View>
                 <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
@@ -112,7 +116,7 @@ const ChatListScreen = props => {
                                 title={title}
                                 subTitle={subTitle}
                                 image={image}
-                                onPress={() => props.navigation.navigate("ChatScreen", { chatId })}
+                                onPress={() => props.navigation.navigate("Convos", { chatId })}
                             />
                 }}
             />

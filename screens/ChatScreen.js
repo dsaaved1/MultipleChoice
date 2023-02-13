@@ -21,7 +21,7 @@ import colors from "../constants/colors";
 import { useSelector } from "react-redux";
 import PageContainer from "../components/PageContainer";
 import Bubble from "../components/Bubble";
-import { createChat, sendImage, sendTextMessage } from "../utils/actions/chatActions";
+import { createChat, createConvo, sendImage, sendTextMessage } from "../utils/actions/chatActions";
 import ReplyTo from "../components/ReplyTo";
 import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -32,20 +32,24 @@ const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [chatId, setChatId] = useState(props.route?.params?.chatId);
+  const [convoId, setConvoId] = useState(props.route?.params?.convoId);
   const [errorBannerText, setErrorBannerText] = useState("");
   const [replyingTo, setReplyingTo] = useState();
   const [tempImageUri, setTempImageUri] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  //we use this to create a reference to component
+  // and scrolling the chat to the bottom new message
   const flatList = useRef();
 
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
   const storedChats = useSelector(state => state.chats.chatsData);
+  
   const chatMessages = useSelector(state => {
-    if (!chatId) return [];
+    if (!convoId) return [];
 
-    const chatMessagesData = state.messages.messagesData[chatId];
+    const chatMessagesData = state.messages.messagesData[convoId];
 
     if (!chatMessagesData) return [];
 
@@ -98,13 +102,16 @@ const ChatScreen = (props) => {
 
     try {
       let id = chatId;
+      let id2 = chatId;
       if (!id) {
         // No chat Id. Create the chat
         id = await createChat(userData.userId, props.route.params.newChatData);
         setChatId(id);
+        id2 = await createConvo(userData.userId, props.route.params.newChatData, id);
+        setConvoId(id2);
       }
 
-      await sendTextMessage(id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
+      await sendTextMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
 
       setMessageText("");
       setReplyingTo(null);
@@ -143,17 +150,20 @@ const ChatScreen = (props) => {
 
     try {
 
-      let id = chatId;
+      let id = chatId; 
+      let id2 = chatId; 
       if (!id) {
         // No chat Id. Create the chat
         id = await createChat(userData.userId, props.route.params.newChatData);
         setChatId(id);
+        id2 = await createConvo(userData.userId, props.route.params.newChatData, id);
+        setConvoId(id2);
       }
 
       const uploadUrl = await uploadImageAsync(tempImageUri, true);
       setIsLoading(false);
 
-      await sendImage(id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers)
+      await sendImage(id2, id, userData, uploadUrl, replyingTo && replyingTo.key, chatUsers)
       setReplyingTo(null);
       
       setTimeout(() => setTempImageUri(""), 500);
@@ -185,7 +195,9 @@ const ChatScreen = (props) => {
               chatId && 
               <FlatList
                 ref={(ref) => flatList.current = ref}
+                ////puts chat to the bottom after new message sent
                 onContentSizeChange={() => flatList.current.scrollToEnd({ animated: false })}
+                //puts chat to the bottom when loaded
                 onLayout={() => flatList.current.scrollToEnd({ animated: false })}
                 data={chatMessages}
                 renderItem={(itemData) => {

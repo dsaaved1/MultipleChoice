@@ -21,13 +21,33 @@ export const createChat = async (loggedInUserId, chatData) => {
     for (let i = 0; i < chatUsers.length; i++) {
         const userId = chatUsers[i];
         await push(child(dbRef, `userChats/${userId}`), newChat.key);
+        //await push(child(dbRef, `userGroups/${userId}`), newGroup.key);
     }
-
+    
     return newChat.key;
 }
 
-export const sendTextMessage = async (chatId, senderData, messageText, replyTo, chatUsers) => {
-    await sendMessage(chatId, senderData.userId, messageText, null, replyTo, null);
+export const createConvo = async (loggedInUserId, chatData, chatId) => {
+
+    const convoData = {
+        convoName:  "Convo",
+        category: "New Convo",
+        createdBy: loggedInUserId,
+        updatedBy: loggedInUserId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const newConvo = child(dbRef, `convos/${chatId}`);
+    await push(newConvo, convoData);
+    
+    return newConvo.key;
+}
+
+export const sendTextMessage = async (convoId, chatId, senderData, messageText, replyTo, chatUsers) => {
+    await sendMessage(convoId, chatId, senderData.userId, messageText, null, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, messageText, chatId);
@@ -37,8 +57,8 @@ export const sendInfoMessage = async (chatId, senderId, messageText) => {
     await sendMessage(chatId, senderId, messageText, null, null, "info");
 }
 
-export const sendImage = async (chatId, senderData, imageUrl, replyTo, chatUsers) => {
-    await sendMessage(chatId, senderData.userId, 'Image', imageUrl, replyTo, null);
+export const sendImage = async (convoId, chatId, senderData, imageUrl, replyTo, chatUsers) => {
+    await sendMessage(convoId, hatId, senderData.userId, 'Image', imageUrl, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId);
@@ -56,10 +76,10 @@ export const updateChatData = async (chatId, userId, chatData) => {
     })
 }
 
-const sendMessage = async (chatId, senderId, messageText, imageUrl, replyTo, type) => {
+const sendMessage = async (convoId, chatId, senderId, messageText, imageUrl, replyTo, type) => {
     const app = getFirebaseApp();
-    const dbRef = ref(getDatabase());
-    const messagesRef = child(dbRef, `messages/${chatId}`);
+    const dbRef = ref(getDatabase(app));
+    const messagesRef = child(dbRef, `messages/${convoId}`);
 
     const messageData = {
         sentBy: senderId,

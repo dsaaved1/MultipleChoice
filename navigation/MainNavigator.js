@@ -14,6 +14,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { setChatsData } from "../store/chatSlice";
+import { setConvosData } from '../store/convoSlice';
+import { setGroupsData } from '../store/groupSlice';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
@@ -22,6 +24,7 @@ import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
 import ContactScreen from "../screens/ContactScreen";
 import DataListScreen from "../screens/DataListScreen";
 import { StackActions, useNavigation } from '@react-navigation/native';
+import ConvosScreen from '../screens/ConvosScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -106,6 +109,10 @@ const StackNavigator = () => {
           component={NewChatScreen}
         />
       </Stack.Group>
+      <Stack.Screen
+          name="Convos"
+          component={ConvosScreen}
+        />
     </Stack.Navigator>
   )
 }
@@ -117,6 +124,7 @@ const MainNavigator = (props) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  //user data of the user logged in
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
 
@@ -151,14 +159,76 @@ const MainNavigator = (props) => {
     };
   }, []);
 
+  //retrieve user groups from database
   useEffect(() => {
     console.log("Subscribing to firebase listeners");
 
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
+    
+    //const userGroupsRef = child(dbRef, `userGroups/${userData.userId}`);
+    //const refs = [userGroupsRef];
+
+    //we want to store all the groups the user is part of in our redux state
+    // onValue(userGroupsRef, (querySnapshot) => {
+    //     const groupIdsData = querySnapshot.val() || {};
+    //     const groupIds = Object.values(groupIdsData);
+  
+    //     const groupsData = {};
+    //     let groupsFoundCount = 0;
+  
+    //     for (let i = 0; i < groupIds.length; i++) {
+    //       const groupId = groupIds[i];
+    //       const groupRef = child(dbRef, `groups/${groupId}`);
+    //       refs.push(groupRef);
+  
+    //       onValue(groupRef, (groupSnapshot) => {
+    //         groupsFoundCount++;
+    //         const data = groupSnapshot.val();
+    //         //console.log("Sssdsds",data)
+    //         if (data) {
+
+    //             //           if (!data.users.includes(userData.userId)) {
+    // //             return;
+    // //           }
+    
+  
+    //           data.key = groupSnapshot.key;
+  
+    //         //   data.users.forEach(userId => {
+    //         //     if (storedUsers[userId]) return;
+  
+    //         //     const userRef = child(dbRef, `users/${userId}`);
+  
+    //         //     get(userRef)
+    //         //     .then(userSnapshot => {
+    //         //       const userSnapshotData = userSnapshot.val();
+    //         //       dispatch(setStoredUsers({ newUsers: { userSnapshotData } }))
+    //         //     })
+  
+    //         //     refs.push(userRef);
+    //         //   })
+  
+    //           groupsData[groupSnapshot.key] = data;
+    //         }
+  
+    //         if (groupsFoundCount >= groupIds.length) {
+    //             //console.log(groupsData)
+    //           dispatch(setGroupsData({ groupsData }));
+    //           //setIsLoading(false);
+    //         }
+    //       })
+  
+          
+    //     }
+  
+    //   })
+
+    // console.log("Groups dispatched")
+
+    //we want to store all the chats the user is part of in our redux state
     const userChatsRef = child(dbRef, `userChats/${userData.userId}`);
     const refs = [userChatsRef];
-
     onValue(userChatsRef, (querySnapshot) => {
       const chatIdsData = querySnapshot.val() || {};
       const chatIds = Object.values(chatIdsData);
@@ -175,7 +245,7 @@ const MainNavigator = (props) => {
           chatsFoundCount++;
           
           const data = chatSnapshot.val();
-
+          //console.log("Sssdsds",data)
           if (data) {
 
             if (!data.users.includes(userData.userId)) {
@@ -207,13 +277,39 @@ const MainNavigator = (props) => {
           }
         })
 
-        const messagesRef = child(dbRef, `messages/${chatId}`);
-        refs.push(messagesRef);
+        const convosRef = child(dbRef, `convos/${chatId}`);
+        refs.push(convosRef);
 
-        onValue(messagesRef, messagesSnapshot => {
-          const messagesData = messagesSnapshot.val();
-          dispatch(setChatMessages({ chatId, messagesData }));
+        onValue(convosRef, convosSnapshot => {
+            const convosData = convosSnapshot.val();
+            dispatch(setConvosData({ chatId, convosData }));
+            
+            if (convosData) {
+                Object.keys(convosData).forEach(convoId => {
+                    const messagesRef = child(dbRef, `messages/${convoId}`);
+                    refs.push(messagesRef);
+        
+                    onValue(messagesRef, messagesSnapshot => {
+                        //messageSnapshot it's like a convoId id and its value below takes all the messages Data from that id
+                        const messagesData = messagesSnapshot.val();
+                        dispatch(setChatMessages({ convoId, messagesData }));
+                    })
+                });
+              }
+            
         })
+
+        // const messagesRef = child(dbRef, `messages/${chatId}`);
+        //     refs.push(messagesRef);
+
+        //     //this is not a for loop this will run how many chatIds the user has
+        //     onValue(messagesRef, messagesSnapshot => {
+        //         //messageSnapshot it's like a chat id and its value below takes all the data of message from that id
+        //     const messagesData = messagesSnapshot.val();
+        //     dispatch(setChatMessages({ chatId, messagesData }));
+        //     })
+
+        
 
         if (chatsFoundCount == 0) {
           setIsLoading(false);
@@ -221,6 +317,8 @@ const MainNavigator = (props) => {
       }
 
     })
+
+    console.log("chats and messages dispatched")
 
     const userStarredMessagesRef = child(dbRef, `userStarredMessages/${userData.userId}`);
     refs.push(userStarredMessagesRef);

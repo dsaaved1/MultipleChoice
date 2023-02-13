@@ -10,9 +10,9 @@ const messagesSlice = createSlice({
         setChatMessages: (state, action) => {
             const existingMessages = state.messagesData;
 
-            const { chatId, messagesData } = action.payload;
+            const { convoId, messagesData } = action.payload;
 
-            existingMessages[chatId] = messagesData;
+            existingMessages[convoId] = messagesData;
 
             state.messagesData = existingMessages;
         },
