@@ -1,3 +1,5 @@
+//takes care of user sign in authentication
+
 export const reducer = (state, action) => {
     const { validationResult, inputId, inputValue } = action
 

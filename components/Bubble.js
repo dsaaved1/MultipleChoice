@@ -32,9 +32,9 @@ const MenuItem = props => {
 }
 
 const Bubble = props => {
-    const { text, type, messageId, chatId, userId, date, setReply, replyingTo, name, imageUrl } = props;
+    const { text, type, messageId, chatId, convoId, userId, date, setReply, replyingTo, name, imageUrl } = props;
 
-    const starredMessages = useSelector(state => state.messages.starredMessages[chatId] ?? {});
+    const starredMessages = useSelector(state => state.messages.starredMessages[convoId] ?? {});
     const storedUsers = useSelector(state => state.users.storedUsers);
 
     const bubbleStyle = { ...styles.container };
@@ -139,7 +139,7 @@ const Bubble = props => {
 
                     <MenuOptions>
                         <MenuItem text='Copy to clipboard' icon={'copy'} onSelect={() => copyToClipboard(text)} />
-                        <MenuItem text={`${isStarred ? 'Unstar' : 'Star'} message`} icon={isStarred ? 'star-o' : 'star'} iconPack={FontAwesome} onSelect={() => starMessage(messageId, chatId, userId)} />
+                        <MenuItem text={`${isStarred ? 'Unstar' : 'Star'} message`} icon={isStarred ? 'star-o' : 'star'} iconPack={FontAwesome} onSelect={() => starMessage(messageId, convoId, userId, chatId)} />
                         <MenuItem text='Reply' icon='arrow-left-circle' onSelect={setReply} />
                         
                     </MenuOptions>
@@ -163,11 +163,13 @@ const styles = StyleSheet.create({
         padding: 5,
         marginBottom: 10,
         borderColor: '#E2DACC',
-        borderWidth: 1
+        borderWidth: 1.5,
+        borderColor: colors.primary,
     },
     text: {
         fontFamily: 'regular',
-        letterSpacing: 0.3
+        letterSpacing: 0.3,
+        fontSize: 16
     },
     menuItemContainer: {
         flexDirection: 'row',
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontFamily: 'regular',
         letterSpacing: 0.3,
-        fontSize: 16
+        fontSize: 18
     },
     timeContainer: {
         flexDirection: 'row',
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
         fontFamily: 'regular',
         letterSpacing: 0.3,
         color: colors.grey,
-        fontSize: 12
+        fontSize: 10
     },
     name: {
         fontFamily: 'medium',

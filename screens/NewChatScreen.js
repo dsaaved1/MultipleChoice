@@ -122,7 +122,7 @@ const NewChatScreen = props => {
                                 style={styles.textbox}
                                 placeholder="Enter a name for your chat"
                                 autoCorrect={false}
-                                autoComplete={false}
+                                //autoComplete={false} doesn't work on Android for some reason
                                 onChangeText={text => setChatName(text)}
                             />
                         </View>

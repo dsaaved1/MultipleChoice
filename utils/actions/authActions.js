@@ -2,10 +2,11 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { getFirebaseApp } from '../firebaseHelper';
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { child, get, getDatabase, ref, set, update } from 'firebase/database';
+import { child, get, getDatabase, push, ref, set, update } from 'firebase/database';
 import { authenticate, logout } from '../../store/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserData } from './userActions';
+//import { createChat, createConvo, sendTextMessage } from './chatActions';
 
 let timer;
 
@@ -24,6 +25,7 @@ export const signUp = (firstName, lastName, email, password) => {
             const millisecondsUntilExpiry = expiryDate - timeNow;
 
             const userData = await createUser(firstName, lastName, email, uid);
+            
 
             dispatch(authenticate({ token: accessToken, userData }));
             saveDataToStorage(accessToken, uid, expiryDate);
@@ -62,7 +64,7 @@ export const signIn = (email, password) => {
             const millisecondsUntilExpiry = expiryDate - timeNow;
 
             const userData = await getUserData(uid);
-
+            
             dispatch(authenticate({ token: accessToken, userData }));
             saveDataToStorage(accessToken, uid, expiryDate);
             await storePushToken(userData);
@@ -125,6 +127,34 @@ const createUser = async (firstName, lastName, email, userId) => {
     const dbRef = ref(getDatabase());
     const childRef = child(dbRef, `users/${userId}`);
     await set(childRef, userData);
+    const newChatData = {
+            users: [userId],
+            isGroupChat: false,
+            chatName: "Me, Myself, and AI",
+            createdBy: userId,
+            updatedBy: userId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        
+    };
+    const newChat = await push(child(dbRef, 'chats'), newChatData);
+    await push(child(dbRef, `userChats/${userId}`), newChat.key);
+
+    const convoData = {
+        convoName:  "Convo",
+        category: "New Convo",
+        createdBy: userId,
+        updatedBy: userId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    const newConvo = child(dbRef, `convos/${newChat.key}`);
+    const convoKey = await push(newConvo, convoData);
+
+    const messagesRef = child(dbRef, `messages/${convoKey.key}`);
+    
+
     return userData;
 }
 

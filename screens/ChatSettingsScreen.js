@@ -16,12 +16,15 @@ const ChatSettingsScreen = props => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
     const chatId = props.route.params.chatId;
     const chatData = useSelector(state => state.chats.chatsData[chatId] || {});
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
-    const starredMessages = useSelector(state => state.messages.starredMessages[chatId] ?? {});
+
+    //when you go to chat setting screen after convos there is no convoId, therefore no starredMessages
+    const convoId = props.route.params.convoId;
+    const starredMessages = useSelector(state => state.messages.starredMessages[convoId] ?? {});
+    
 
     const initialState = {
         inputValues: { chatName: chatData.chatName },
@@ -144,7 +147,7 @@ const ChatSettingsScreen = props => {
                             title={`${currentUser.firstName} ${currentUser.lastName}`}
                             subTitle={currentUser.about}
                             type={uid !== userData.userId && "link"}
-                            onPress={() => uid !== userData.userId && props.navigation.navigate("Contact", { uid, chatId })}
+                            onPress={() => uid !== userData.userId && props.navigation.navigate("Contact", { uid, chatId, convoId })}
                         />
                     })
                 }
@@ -175,12 +178,14 @@ const ChatSettingsScreen = props => {
                 />
             }
 
-            <DataItem
+            
+            {/* <DataItem
+            // this will be for convoSettings because that's how we acess tthe messages in DataListScreen: const { convoId, messageId } = starData;
                 type={"link"}
                 title="Starred messages"
                 hideImage={true}
-                onPress={() => props.navigation.navigate("DataList", { title: "Starred messages", data: Object.values(starredMessages), type: "messages" })}
-            />
+                onPress={() => props.navigation.navigate("DataList", { title: "Starred messages", data: Object.values(starredMessages), type: "messages"})}
+            /> */}
 
         </ScrollView>
 

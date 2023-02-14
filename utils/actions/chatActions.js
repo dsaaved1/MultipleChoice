@@ -7,6 +7,7 @@ export const createChat = async (loggedInUserId, chatData) => {
 
     const newChatData = {
         ...chatData,
+        numberUsers: chatData.users.length,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
@@ -32,6 +33,7 @@ export const createConvo = async (loggedInUserId, chatData, chatId) => {
     const convoData = {
         convoName:  "Convo",
         category: "New Convo",
+        latestAIText: "No AI conversation yet",
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
@@ -41,16 +43,16 @@ export const createConvo = async (loggedInUserId, chatData, chatId) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
     const newConvo = child(dbRef, `convos/${chatId}`);
-    await push(newConvo, convoData);
+    const convoKey = await push(newConvo, convoData);
     
-    return newConvo.key;
+    return convoKey.key;
 }
 
 export const sendTextMessage = async (convoId, chatId, senderData, messageText, replyTo, chatUsers) => {
     await sendMessage(convoId, chatId, senderData.userId, messageText, null, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
-    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, messageText, chatId);
+    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, messageText, chatId, convoId);
 }
 
 export const sendInfoMessage = async (chatId, senderId, messageText) => {
@@ -58,10 +60,10 @@ export const sendInfoMessage = async (chatId, senderId, messageText) => {
 }
 
 export const sendImage = async (convoId, chatId, senderData, imageUrl, replyTo, chatUsers) => {
-    await sendMessage(convoId, hatId, senderData.userId, 'Image', imageUrl, replyTo, null);
+    await sendMessage(convoId, chatId, senderData.userId, 'Image', imageUrl, replyTo, null);
 
     const otherUsers = chatUsers.filter(uid => uid !== senderData.userId);
-    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId);
+    await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId, convoId);
 }
 
 export const updateChatData = async (chatId, userId, chatData) => {
@@ -71,6 +73,7 @@ export const updateChatData = async (chatId, userId, chatData) => {
 
     await update(chatRef, {
         ...chatData,
+        numberUsers: chatData.users? chatData.users.length : numberUsers,
         updatedAt: new Date().toISOString(),
         updatedBy: userId
     })
@@ -107,13 +110,20 @@ const sendMessage = async (convoId, chatId, senderId, messageText, imageUrl, rep
         updatedAt: new Date().toISOString(),
         latestMessageText: messageText
     });
+    
+    const convoRef = child(dbRef, `convos/${chatId}/${convoId}`);
+    await update(convoRef, {
+        updatedBy: senderId,
+        updatedAt: new Date().toISOString(),
+        latestMessageText: messageText
+    });
 }
 
-export const starMessage = async (messageId, chatId, userId) => {
+export const starMessage = async (messageId, convoId, userId, chatId) => {
     try {
         const app = getFirebaseApp();
         const dbRef = ref(getDatabase(app));
-        const childRef = child(dbRef, `userStarredMessages/${userId}/${chatId}/${messageId}`);
+        const childRef = child(dbRef, `userStarredMessages/${userId}/${convoId}/${messageId}`);
 
         const snapshot = await get(childRef);
 
@@ -125,6 +135,7 @@ export const starMessage = async (messageId, chatId, userId) => {
             // Starred item does not exist - star
             const starredMessageData = {
                 messageId,
+                convoId,
                 chatId,
                 starredAt: new Date().toISOString()
             }
@@ -152,11 +163,12 @@ export const removeUserFromChat = async (userLoggedInData, userToRemoveData, cha
         }
     }
 
-    const messageText = userLoggedInData.userId === userToRemoveData.userId ?
-        `${userLoggedInData.firstName} left the chat` :
-        `${userLoggedInData.firstName} removed ${userToRemoveData.firstName} from the chat`;
+    //we would this for contributors
+    // const messageText = userLoggedInData.userId === userToRemoveData.userId ?
+    //     `${userLoggedInData.firstName} left the chat` :
+    //     `${userLoggedInData.firstName} removed ${userToRemoveData.firstName} from the chat`;
 
-    await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
+    // await sendInfoMessage(convoId, chatData.key, userLoggedInData.userId, messageText);
 }
 
 export const addUsersToChat = async (userLoggedInData, usersToAddData, chatData) => {
@@ -181,15 +193,17 @@ export const addUsersToChat = async (userLoggedInData, usersToAddData, chatData)
         return;
     }
 
+
     await updateChatData(chatData.key, userLoggedInData.userId, { users: existingUsers.concat(newUsers) })
 
-    const moreUsersMessage = newUsers.length > 1 ? `and ${newUsers.length - 1} others ` : '';
-    const messageText = `${userLoggedInData.firstName} ${userLoggedInData.lastName} added ${userAddedName} ${moreUsersMessage}to the chat`;
-    await sendInfoMessage(chatData.key, userLoggedInData.userId, messageText);
+    //we would this for contributors addUsersToConvo and send a message to convo
+    // const moreUsersMessage = newUsers.length > 1 ? `and ${newUsers.length - 1} others ` : '';
+    // const messageText = `${userLoggedInData.firstName} ${userLoggedInData.lastName} added ${userAddedName} ${moreUsersMessage}to the chat`;
+    // await sendInfoMessage(convoId, chatData.key, userLoggedInData.userId, messageText);
 
 }
 
-const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
+const sendPushNotificationForUsers = (chatUsers, title, body, chatId, convoId) => {
     chatUsers.forEach(async uid => {
         console.log("test");
         const tokens = await getUserPushTokens(uid);
@@ -206,7 +220,7 @@ const sendPushNotificationForUsers = (chatUsers, title, body, chatId) => {
                     to: token,
                     title,
                     body,
-                    data: { chatId }
+                    data: { chatId, convoId }
                 })
             })
         }

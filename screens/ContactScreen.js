@@ -14,13 +14,12 @@ const ContactScreen = props => {
     const [isLoading, setIsLoading] = useState(false);
     const storedUsers = useSelector(state => state.users.storedUsers);
     const userData = useSelector(state => state.auth.userData);
-    const currentUser = storedUsers[props.route.params.uid];
-
+    const currentUser = storedUsers[props.route.params.uid]? storedUsers[props.route.params.uid] : userData ;
     const storedChats = useSelector(state => state.chats.chatsData);
     const [commonChats, setCommonChats] = useState([]);
-
     const chatId = props.route.params.chatId;
     const chatData = chatId && storedChats[chatId];
+    const convoId = props.route.params.convoId;
 
     useEffect(() => {
 
@@ -77,7 +76,10 @@ const ContactScreen = props => {
                                title={chatData.chatName}
                                subTitle={chatData.latestMessageText}
                                type="link"
-                               onPress={() => props.navigation.push("ChatScreen", { chatId: cid })}
+                               //modification, before you went to ChatScreen
+                               //we use push because we are currently in the stack on a chatScreen so it would take us
+                               //to that chat screen we were. if we use push it takes us to new Chat Screen
+                               onPress={() => props.navigation.push("Convos", { chatId: cid })}
                                image={chatData.chatImage}
                             />
                     })

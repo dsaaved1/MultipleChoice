@@ -10,7 +10,7 @@ const DataListScreen = props => {
     const userData = useSelector(state => state.auth.userData);
     const messagesData = useSelector(state => state.messages.messagesData);
     
-    const { title, data, type, chatId } = props.route.params;
+    const { title, data, type, chatId} = props.route.params;
 
     useEffect(() => {
         props.navigation.setOptions({ headerTitle: title })
@@ -40,9 +40,10 @@ const DataListScreen = props => {
                     }
                     else if (type === "messages") {
                         const starData = itemData.item;
-                        const { chatId, messageId } = starData;
-                        const messagesForChat = messagesData[chatId];
-
+                        
+                        const { convoId, messageId, chatId} = starData;
+                        const messagesForChat = messagesData[convoId];
+                        
                         if (!messagesForChat) {
                             return;
                         }
@@ -55,7 +56,7 @@ const DataListScreen = props => {
                         title = name;
                         subTitle = messageData.text;
                         itemType = "";
-                        onPress = () => {}
+                        onPress = () => {props.navigation.navigate("ChatScreen", { convoId: convoId, chatId: chatId})}
                     }
 
                     return <DataItem

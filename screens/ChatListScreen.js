@@ -13,7 +13,6 @@ const ChatListScreen = props => {
     const selectedUser = props.route?.params?.selectedUserId;
     const selectedUserList = props.route?.params?.selectedUsers;
     const chatName = props.route?.params?.chatName;
-
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
     const userChats = useSelector(state => {
@@ -22,7 +21,7 @@ const ChatListScreen = props => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
-
+    
     useEffect(() => {
         props.navigation.setOptions({
             headerRight: () => {
@@ -38,6 +37,7 @@ const ChatListScreen = props => {
 
     useEffect(() => {
 
+        //if there is no user select neither selected user list move on
         if (!selectedUser && !selectedUserList) {
             return;
         }
@@ -95,21 +95,32 @@ const ChatListScreen = props => {
                     const isGroupChat = chatData.isGroupChat;
 
                     let title = "";
-                    const subTitle = chatData.latestMessageText || "New chat";
+                    //const subTitle = chatData.latestMessageText || "New chat";
+                    let subTitle = chatData.numberUsers || "New chat";
                     let image = "";
 
                     if (isGroupChat) {
                         title = chatData.chatName;  
                         image = chatData.chatImage;
-                    }
-                    else {
-                        const otherUserId = chatData.users.find(uid => uid !== userData.userId);
-                        const otherUser = storedUsers[otherUserId];
+                        subTitle = `${chatData.numberUsers} group members` || "New chat";
+                        
+                    } else {
+                        if (chatData.users == userData.userId){
+                            
+                            title = chatData.chatName;
+                            image = chatData.chatImage;
+                            subTitle = "Personal AI Chat"
+                        } else {
+                            const otherUserId = chatData.users.find(uid => uid !== userData.userId);
+                            const otherUser = storedUsers[otherUserId];
 
-                        if (!otherUser) return;
+                            if (!otherUser) return;
 
-                        title = `${otherUser.firstName} ${otherUser.lastName}`;
-                        image = otherUser.profilePicture;
+                            title = `${otherUser.firstName} ${otherUser.lastName}`;
+                            image = otherUser.profilePicture;
+                            subTitle = "Direct message"
+                        }
+                        
                     }
 
                     return <DataItem

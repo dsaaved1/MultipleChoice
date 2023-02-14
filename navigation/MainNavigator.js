@@ -101,6 +101,14 @@ const StackNavigator = () => {
             headerBackTitle: "Back",
           }}
         />
+        <Stack.Screen
+          name="Convos"
+          component={ConvosScreen}
+          options={{
+            headerTitle: "",
+            headerBackTitle: "Back",
+          }}
+        />
       </Stack.Group>
 
       <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
@@ -109,10 +117,7 @@ const StackNavigator = () => {
           component={NewChatScreen}
         />
       </Stack.Group>
-      <Stack.Screen
-          name="Convos"
-          component={ConvosScreen}
-        />
+    
     </Stack.Navigator>
   )
 }
@@ -143,9 +148,12 @@ const MainNavigator = (props) => {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       const { data } = response.notification.request.content;
       const chatId = data["chatId"];
+      console.log("chat  ",chatId)
+      const convoId = data["convoId"];
+      console.log("convo ",convoId)
 
       if (chatId) {
-        const pushAction = StackActions.push("ChatScreen", { chatId });
+        const pushAction = StackActions.push("ChatScreen", { chatId, convoId });
         navigation.dispatch(pushAction);
       }
       else {
@@ -165,70 +173,9 @@ const MainNavigator = (props) => {
 
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
-    
-    //const userGroupsRef = child(dbRef, `userGroups/${userData.userId}`);
-    //const refs = [userGroupsRef];
-
-    //we want to store all the groups the user is part of in our redux state
-    // onValue(userGroupsRef, (querySnapshot) => {
-    //     const groupIdsData = querySnapshot.val() || {};
-    //     const groupIds = Object.values(groupIdsData);
-  
-    //     const groupsData = {};
-    //     let groupsFoundCount = 0;
-  
-    //     for (let i = 0; i < groupIds.length; i++) {
-    //       const groupId = groupIds[i];
-    //       const groupRef = child(dbRef, `groups/${groupId}`);
-    //       refs.push(groupRef);
-  
-    //       onValue(groupRef, (groupSnapshot) => {
-    //         groupsFoundCount++;
-    //         const data = groupSnapshot.val();
-    //         //console.log("Sssdsds",data)
-    //         if (data) {
-
-    //             //           if (!data.users.includes(userData.userId)) {
-    // //             return;
-    // //           }
-    
-  
-    //           data.key = groupSnapshot.key;
-  
-    //         //   data.users.forEach(userId => {
-    //         //     if (storedUsers[userId]) return;
-  
-    //         //     const userRef = child(dbRef, `users/${userId}`);
-  
-    //         //     get(userRef)
-    //         //     .then(userSnapshot => {
-    //         //       const userSnapshotData = userSnapshot.val();
-    //         //       dispatch(setStoredUsers({ newUsers: { userSnapshotData } }))
-    //         //     })
-  
-    //         //     refs.push(userRef);
-    //         //   })
-  
-    //           groupsData[groupSnapshot.key] = data;
-    //         }
-  
-    //         if (groupsFoundCount >= groupIds.length) {
-    //             //console.log(groupsData)
-    //           dispatch(setGroupsData({ groupsData }));
-    //           //setIsLoading(false);
-    //         }
-    //       })
-  
-          
-    //     }
-  
-    //   })
-
-    // console.log("Groups dispatched")
-
-    //we want to store all the chats the user is part of in our redux state
     const userChatsRef = child(dbRef, `userChats/${userData.userId}`);
     const refs = [userChatsRef];
+
     onValue(userChatsRef, (querySnapshot) => {
       const chatIdsData = querySnapshot.val() || {};
       const chatIds = Object.values(chatIdsData);
@@ -237,6 +184,7 @@ const MainNavigator = (props) => {
       let chatsFoundCount = 0;
 
       for (let i = 0; i < chatIds.length; i++) {
+        
         const chatId = chatIds[i];
         const chatRef = child(dbRef, `chats/${chatId}`);
         refs.push(chatRef);
@@ -253,7 +201,7 @@ const MainNavigator = (props) => {
             }
 
             data.key = chatSnapshot.key;
-
+            
             data.users.forEach(userId => {
               if (storedUsers[userId]) return;
 
@@ -298,19 +246,7 @@ const MainNavigator = (props) => {
               }
             
         })
-
-        // const messagesRef = child(dbRef, `messages/${chatId}`);
-        //     refs.push(messagesRef);
-
-        //     //this is not a for loop this will run how many chatIds the user has
-        //     onValue(messagesRef, messagesSnapshot => {
-        //         //messageSnapshot it's like a chat id and its value below takes all the data of message from that id
-        //     const messagesData = messagesSnapshot.val();
-        //     dispatch(setChatMessages({ chatId, messagesData }));
-        //     })
-
         
-
         if (chatsFoundCount == 0) {
           setIsLoading(false);
         }
@@ -374,7 +310,6 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    console.log("her6")
     token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
     console.log('Must use physical device for Push Notifications');

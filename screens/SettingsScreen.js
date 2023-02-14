@@ -22,14 +22,13 @@ const SettingsScreen = props => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const userData = useSelector(state => state.auth.userData);
     const starredMessages = useSelector(state => state.messages.starredMessages ?? {});
-
     const sortedStarredMessages = useMemo(() => {
         let result = [];
 
-        const chats = Object.values(starredMessages);
+        const convos = Object.values(starredMessages);
 
-        chats.forEach(chat => {
-            const chatMessages = Object.values(chat);
+        convos.forEach(convo => {
+            const chatMessages = Object.values(convo);
             result = result.concat(chatMessages);
         })
 
@@ -95,6 +94,7 @@ const SettingsScreen = props => {
     }
     
     return <PageContainer>
+        
         <PageTitle text="Settings" />
 
         <ScrollView contentContainerStyle={styles.formContainer}>

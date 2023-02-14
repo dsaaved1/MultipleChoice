@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 
-import backgroundImage from "../assets/images/droplet.jpeg";
+import backgroundImage from "../assets/images/black.jpg";
 import colors from "../constants/colors";
 import { useSelector } from "react-redux";
 import PageContainer from "../components/PageContainer";
@@ -65,10 +65,12 @@ const ChatScreen = (props) => {
 
     return messageList;
   });
-
+  //console.log("chat messages  ", chatMessages)
+  //id    ", chatId)
   const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
-
+  //console.log("chat dataaa   ", chatData)
   const getChatTitleFromName = () => {
+    
     const otherUserId = chatUsers.find(uid => uid !== userData.userId);
     const otherUserData = storedUsers[otherUserId];
 
@@ -80,20 +82,22 @@ const ChatScreen = (props) => {
     
     props.navigation.setOptions({
       headerTitle: chatData.chatName ?? getChatTitleFromName(),
-      headerRight: () => {
-        return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-          {
-            chatId && 
-            <Item
-              title="Chat settings"
-              iconName="settings-outline"
-              onPress={() => chatData.isGroupChat ?
-                props.navigation.navigate("ChatSettings", { chatId }) :
-                props.navigation.navigate("Contact", { uid: chatUsers.find(uid => uid !== userData.userId) })}
-            />
-          }
-        </HeaderButtons>
-      }
+      // headerRight: () => {
+      //   return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+      //     {
+      //       //we will put this again after adding contributors functionality
+      //       chatId && 
+      //       <Item
+      //         title="Chat settings"
+      //         iconName="settings-outline"
+      //         onPress={() => chatData.isGroupChat ?
+      //           // we will send convoId to chatSetting to display the message when we deal with contributors
+      //           props.navigation.navigate("ChatSettings", { chatId, convoId }) :
+      //           props.navigation.navigate("Contact", { uid: chatUsers.find(uid => uid !== userData.userId) })}
+      //       />
+      //     }
+      //   </HeaderButtons>
+      // }
     })
     setChatUsers(chatData.users)
   }, [chatUsers])
@@ -101,9 +105,11 @@ const ChatScreen = (props) => {
   const sendMessage = useCallback(async () => {
 
     try {
+      
       let id = chatId;
-      let id2 = chatId;
+      let id2 = convoId;
       if (!id) {
+        console.log("about to create a chat")
         // No chat Id. Create the chat
         id = await createChat(userData.userId, props.route.params.newChatData);
         setChatId(id);
@@ -112,6 +118,7 @@ const ChatScreen = (props) => {
       }
 
       await sendTextMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
+      console.log("about to send a message")
 
       setMessageText("");
       setReplyingTo(null);
@@ -151,7 +158,7 @@ const ChatScreen = (props) => {
     try {
 
       let id = chatId; 
-      let id2 = chatId; 
+      let id2 = convoId; 
       if (!id) {
         // No chat Id. Create the chat
         id = await createChat(userData.userId, props.route.params.newChatData);
@@ -184,7 +191,7 @@ const ChatScreen = (props) => {
           <PageContainer style={{ backgroundColor: 'transparent'}}>
 
             {
-              !chatId && <Bubble text='This is a new chat. Say hi!' type="system" />
+              !chatId && <Bubble text="Send a message to activate your new chat!" type="system" />
             }
 
             {
@@ -225,6 +232,7 @@ const ChatScreen = (props) => {
                             messageId={message.key}
                             userId={userData.userId}
                             chatId={chatId}
+                            convoId={convoId}
                             date={message.sentAt}
                             name={!chatData.isGroupChat || isOwnMessage ? undefined : name}
                             setReply={() => setReplyingTo(message)}

@@ -4,7 +4,7 @@ import colors from '../constants/colors';
 import ProfileImage from './ProfileImage';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 
-const imageSize = 40;
+const imageSize = 55;
 
 const DataItem = props => {
 
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
         borderBottomColor: colors.extraLightGrey,
         borderBottomWidth: 1,
         alignItems: 'center',
-        minHeight: 50
+        minHeight: 70
     },
     textContainer: {
         marginLeft: 14,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'medium',
-        fontSize: 16,
+        fontSize: 18,
         letterSpacing: 0.3
     },
     subTitle: {
