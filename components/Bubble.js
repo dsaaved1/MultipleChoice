@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import colors from '../constants/colors';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { starMessage } from '../utils/actions/chatActions';
 import { useSelector } from 'react-redux';
+import { updateConvoColorMap } from "../utils/actions/chatActions";
 
 function formatAmPm(dateString) {
     const date = new Date(dateString);
@@ -17,6 +18,11 @@ function formatAmPm(dateString) {
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0'+minutes : minutes;
     return hours + ':' + minutes + ' ' + ampm;
+  }
+
+  function getRandomColor() {
+    const colors = ['#6653FF', '#53FF66', '#FF6653', '#BC53FF', '#19C37D', '#FFFF66', 'teal', '#FF6EFF', '#FF9933', '#50BFE6', "#00468C"];
+    return colors[Math.floor(Math.random() * colors.length)];
   }
 
 const MenuItem = props => {
@@ -31,13 +37,58 @@ const MenuItem = props => {
     </MenuOption>
 }
 
+
+let colorMap = {};
+
 const Bubble = props => {
-    const { text, type, messageId, chatId, convoId, userId, date, setReply, replyingTo, name, imageUrl } = props;
+    const { text, type, messageId, chatId, convoId, userId, date, setReply, replyingTo, name, senderID, convoData, imageUrl } = props;
+   
+    let colorBorder;
+    //attempted to assign to read only property
+    //const colorMap = convoData.colorMap
+
+    if (userId == senderID){
+        colorBorder = "#FF5366"
+    } else if (colorMap[senderID]){
+        colorBorder = colorMap[senderID]
+    } else {
+        const color = getRandomColor()
+        colorMap[senderID] = color
+    }
+
+  
+
+    //Failed to store colors per convo
+    // if (convoData) {
+    //     const senderIndexColor = convoData.userMap.indexOf(senderID);
+    //     if (senderIndexColor !== -1) {
+    //         console.log("here same color")
+    //         colorBorder = convoData.colorMap[senderIndexColor]
+    //     }else{
+    //         const newColor = getRandomColor();
+    //         colorBorder = newColor
+    //         console.log("here assigning new color")
+
+    //         //updateConvoColorMap(chatId,convoData, senderID, newColor)
+    //     }
+
+    // }
+    
 
     const starredMessages = useSelector(state => state.messages.starredMessages[convoId] ?? {});
     const storedUsers = useSelector(state => state.users.storedUsers);
 
-    const bubbleStyle = { ...styles.container };
+    const bubbleStyle = { 
+        ...styles.container,      
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 2.22,
+        elevation: 3,
+     };
     const textStyle = { ...styles.text };
     const wrapperStyle = { ...styles.wrapperStyle }
 
@@ -48,37 +99,55 @@ const Bubble = props => {
     let isUserMessage = false;
     const dateString = date && formatAmPm(date);
 
+
     switch (type) {
         case "system":
             textStyle.color = '#65644A';
             bubbleStyle.backgroundColor = colors.beige;
             bubbleStyle.alignItems = 'center';
             bubbleStyle.marginTop = 10;
+            textStyle.fontFamily = 'regular';
+            textStyle.fontSize = 16;
             break;
         case "error":
             bubbleStyle.backgroundColor = colors.red;
             textStyle.color = 'white';
             bubbleStyle.marginTop = 10;
+            textStyle.fontFamily = 'regular';
+            textStyle.fontSize = 16;
             break;
         case "myMessage":
             wrapperStyle.justifyContent = 'flex-end';
-            bubbleStyle.backgroundColor = '#E7FED6';
-            bubbleStyle.maxWidth = '90%';
+            bubbleStyle.backgroundColor = '#1C2331';
+            bubbleStyle.maxWidth = '65%';
+            textStyle.fontFamily = 'regular';
             Container = TouchableWithoutFeedback;
             isUserMessage = true;
+            textStyle.fontSize = 14;
+            textStyle.color = 'white';
+            bubbleStyle.borderColor = colorBorder;
             break;
         case "theirMessage":
             wrapperStyle.justifyContent = 'flex-start';
-            bubbleStyle.maxWidth = '90%';
+            bubbleStyle.maxWidth = '65%';
+            bubbleStyle.backgroundColor = '#1C2331';
+            textStyle.color = 'white';
+            textStyle.fontFamily = 'regular';
             Container = TouchableWithoutFeedback;
             isUserMessage = true;
+            bubbleStyle.borderRadius = 16;
+            bubbleStyle.borderColor = colorBorder;
+            textStyle.fontSize = 14;
             break;
         case "reply":
-            bubbleStyle.backgroundColor = '#F2F2F2';
+            bubbleStyle.backgroundColor = '#1C2337';
+            bubbleStyle.fontSize = 16;
+            textStyle.color = 'white';
             break;
         case "info":
             bubbleStyle.backgroundColor = 'white';
             bubbleStyle.alignItems = 'center';
+            textStyle.fontSize = 16;
             textStyle.color = colors.textColor;
             break;
         default:
@@ -103,7 +172,7 @@ const Bubble = props => {
 
                     {
                         name && type !== "info" &&
-                        <Text style={styles.name}>{name}</Text>
+                        <Text style={{...styles.name, color: colorBorder}}>{name}</Text>
                     }
 
                     {
@@ -116,20 +185,28 @@ const Bubble = props => {
                     }
 
                     {
-                        !imageUrl &&
-                        <Text style={textStyle}>
-                            {text}
-                        </Text>
-                    }
-
-                    {
                         imageUrl &&
                         <Image source={{ uri: imageUrl }} style={styles.image} />
                     }
 
+                    {
+                        !imageUrl &&
+                        <View>
+                            <Text style={textStyle}>
+                                {text}
+                            </Text>
+                            <View>
+
+                            </View>
+                        </View>
+                    }
+
+                    
+
+                    
                 {
                     dateString && type !== "info" && <View style={styles.timeContainer}>
-                        { isStarred && <FontAwesome name='star' size={14} color={colors.textColor} style={{ marginRight: 5 }} /> }
+                        { isStarred && <FontAwesome name='star' size={14} color={'#8E8E93'} style={{ marginRight: 5 }} /> }
                         <Text style={styles.time}>{dateString}</Text>
                     </View>
                 }
@@ -158,18 +235,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     container: {
-        backgroundColor: 'white',
         borderRadius: 6,
         padding: 5,
         marginBottom: 10,
-        borderColor: '#E2DACC',
-        borderWidth: 1.5,
-        borderColor: colors.primary,
+        borderWidth: 1,
     },
     text: {
-        fontFamily: 'regular',
         letterSpacing: 0.3,
-        fontSize: 16
+        //paddingBottom:5,
+        paddingLeft:5,
     },
     menuItemContainer: {
         flexDirection: 'row',
@@ -183,7 +257,8 @@ const styles = StyleSheet.create({
     },
     timeContainer: {
         flexDirection: 'row',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        paddingLeft:"20%"
     },
     time: {
         fontFamily: 'regular',
@@ -192,12 +267,14 @@ const styles = StyleSheet.create({
         fontSize: 10
     },
     name: {
-        fontFamily: 'medium',
-        letterSpacing: 0.3
+        fontFamily: 'bold',
+        letterSpacing: 0.3,
+        fontSize: 12,
+        padding:5
     },
     image: {
-        width: 300,
-        height: 300,
+        width: 200,
+        height: 200,
         marginBottom: 5
     }
 })

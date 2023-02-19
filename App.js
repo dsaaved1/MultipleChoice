@@ -25,6 +25,7 @@ export default function App() {
       try {
         await Font.loadAsync({
           "black": require("./assets/fonts//Roboto-Black.ttf"),
+          "blackLato": require("./assets/fonts//Lato-Black.ttf"),
           "blackItalic": require("./assets/fonts/Roboto-BlackItalic.ttf"),
           "bold": require("./assets/fonts/Roboto-Bold.ttf"),
           "boldItalic": require("./assets/fonts/Roboto-BoldItalic.ttf"),
@@ -77,7 +78,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    //backgroundColor: "#fff",
   },
   label: {
     color: 'black',

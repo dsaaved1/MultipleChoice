@@ -36,7 +36,7 @@ const DataItem = props => {
 
                     <Text
                         numberOfLines={1}
-                        style={{ ...styles.title, ...{ color: type === "button" ? colors.blue : colors.textColor } }}>
+                        style={{ ...styles.title, ...{ color: type === "button" ? colors.blue : 'white' } }}>
                         {title}
                     </Text>
 
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingVertical: 7,
         borderBottomColor: colors.extraLightGrey,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.2,
         alignItems: 'center',
         minHeight: 70
     },
@@ -86,13 +86,16 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'medium',
-        fontSize: 18,
-        letterSpacing: 0.3
+        fontSize: 16,
+        letterSpacing: 0.3,
+        
     },
     subTitle: {
         fontFamily: 'regular',
         color: colors.grey,
-        letterSpacing: 0.3
+        letterSpacing: 0.3,
+        fontSize: 12,
+        marginTop:5
     },
     iconContainer: {
         borderWidth: 1,

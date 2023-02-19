@@ -17,6 +17,7 @@ const ChatListScreen = props => {
     const storedUsers = useSelector(state => state.users.storedUsers);
     const userChats = useSelector(state => {
         const chatsData = state.chats.chatsData;
+        console.log(chatsData)
         return Object.values(chatsData).sort((a, b) => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
@@ -24,15 +25,10 @@ const ChatListScreen = props => {
     
     useEffect(() => {
         props.navigation.setOptions({
-            headerRight: () => {
-                return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-                    <Item
-                        title="New chat"
-                        iconName="create-outline"
-                        onPress={() => props.navigation.navigate("NewChat")}/>
-                </HeaderButtons>
+            headerStyle: {
+              backgroundColor: '#0E1528', // set the background color
             }
-        })
+    })
     }, []);
 
     useEffect(() => {
@@ -79,12 +75,22 @@ const ChatListScreen = props => {
     
     return <PageContainer>
 
-        <PageTitle text="Chats" />
+        <PageTitle text="Home" />
 
-            <View>
-                <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })}>
-                    <Text style={styles.newGroupText}>New Group</Text>
-                </TouchableOpacity>
+            <View style={styles.groupContainer}>
+                <Text style={styles.groupText}>Groups</Text>
+
+                <View style={styles.rightContainer}>
+
+                    <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })} style={styles.button}>
+                        <Text style={styles.buttonText}>New Group</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => props.navigation.navigate("NewChat")} style={styles.button}>
+                        <Text style={styles.buttonText}>New Chat</Text>
+                    </TouchableOpacity>
+
+                </View>
             </View>
 
             <FlatList
@@ -96,20 +102,20 @@ const ChatListScreen = props => {
 
                     let title = "";
                     //const subTitle = chatData.latestMessageText || "New chat";
-                    let subTitle = chatData.numberUsers || "New chat";
+                    let subTitle = `${chatData.latestConvo}: ${chatData.latestMessageText}` || "New chat";
                     let image = "";
 
                     if (isGroupChat) {
                         title = chatData.chatName;  
                         image = chatData.chatImage;
-                        subTitle = `${chatData.numberUsers} group members` || "New chat";
+                       // subTitle = `${chatData.numberUsers} group members` || "New chat";
                         
                     } else {
                         if (chatData.users == userData.userId){
                             
                             title = chatData.chatName;
                             image = chatData.chatImage;
-                            subTitle = "Personal AI Chat"
+                            //subTitle = "Personal AI Chat"
                         } else {
                             const otherUserId = chatData.users.find(uid => uid !== userData.userId);
                             const otherUser = storedUsers[otherUserId];
@@ -118,7 +124,7 @@ const ChatListScreen = props => {
 
                             title = `${otherUser.firstName} ${otherUser.lastName}`;
                             image = otherUser.profilePicture;
-                            subTitle = "Direct message"
+                            //subTitle = "Direct message"
                         }
                         
                     }
@@ -135,16 +141,37 @@ const ChatListScreen = props => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    newGroupText: {
-        color: colors.blue,
-        fontSize: 17,
-        marginBottom: 5
-    }
+    // container: {
+    //     flex: 1,
+    //     justifyContent: 'center',
+    //     alignItems: 'center'
+    // },
+    groupContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+      },
+      groupText: {
+        fontSize: 19,
+        fontFamily: 'bold',
+        color: 'white',
+      },
+      rightContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end'
+      },
+      button: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+      },
+      buttonText: {
+        fontSize: 12,
+        fontFamily: 'medium',
+        color: 'white',
+        backgroundColor: 'transparent',
+        mixBlendMode: 'overlay',
+        opacity: 0.5,
+      },
 })
 
 export default ChatListScreen;

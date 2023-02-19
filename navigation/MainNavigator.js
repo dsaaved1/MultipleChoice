@@ -31,10 +31,13 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   return (
-    <Tab.Navigator screenOptions={{
+    <Tab.Navigator 
+    screenOptions={{
       headerTitle: "",
       headerShadowVisible: false  
-    }}>
+    }}
+   
+    >
       <Tab.Screen
         name="ChatList"
         component={ChatListScreen}

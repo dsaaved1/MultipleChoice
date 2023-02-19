@@ -116,6 +116,7 @@ const ConvosScreen = (props) => {
             )}
             ListHeaderComponent={
               <TouchableOpacity
+                keyExtractor={item => item.timestamp}
                 style={styles.card}
                 onPress={() => createConvo(userData.userId,chatData,chatId)}
               >

@@ -10,8 +10,7 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,
         flex: 1,
-        backgroundColor: 'white'
-       // backgroundColor: '#007aff'
+        backgroundColor: '#0E1528'
     }
 })
 
