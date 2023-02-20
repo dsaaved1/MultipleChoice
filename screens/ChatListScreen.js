@@ -4,6 +4,7 @@ import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { useSelector } from 'react-redux';
 import CustomHeaderButton from '../components/CustomHeaderButton';
 import DataItem from '../components/DataItem';
+import BoxConvo from '../components/BoxConvo';
 import PageContainer from '../components/PageContainer';
 import PageTitle from '../components/PageTitle';
 import colors from '../constants/colors';
@@ -15,18 +16,48 @@ const ChatListScreen = props => {
     const chatName = props.route?.params?.chatName;
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
+
+    
+    const userConvos = []
+
     const userChats = useSelector(state => {
         const chatsData = state.chats.chatsData;
-        console.log(chatsData)
+        
+        //is not loading for chatScreen when you create new Chat
+        Object.values(chatsData).forEach(chat => {
+            const convosData = useSelector(state => state.convos.convosData[chat.key])
+            for (const key in convosData){
+                const convoData = convosData[key]
+                userConvos.push({
+                    //you add key as part of new object!!
+                    key,
+                    ...convoData
+                })
+            }
+          }); 
+          //I don't know if this is efficient
+          userConvos.sort((a, b) => {
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+          });
+
+        
+
         return Object.values(chatsData).sort((a, b) => {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
     });
+
+    const latestConvos = userConvos.slice(0, 8);
+
+    
     
     useEffect(() => {
         props.navigation.setOptions({
             headerStyle: {
-              backgroundColor: '#0E1528', // set the background color
+              backgroundColor: '#0E1528', 
+            },
+            headerLeft: () => {
+                return <PageTitle text="  Home" />
             }
     })
     }, []);
@@ -72,10 +103,39 @@ const ChatListScreen = props => {
         props.navigation.navigate("ChatScreen", navigationProps);
 
     }, [props.route?.params])
+
+
     
     return <PageContainer>
 
-        <PageTitle text="Home" />
+        {/* <PageTitle text="Home" /> */}
+
+            <View>
+
+            <Text  style={[styles.groupText, { paddingTop: 20 }]}>Continue Working</Text>
+
+            <FlatList
+                data={latestConvos}
+                renderItem={(itemData) => {
+                    //console.log("User chats: ", userChats)
+                    const convoData = itemData.item;
+                    const convoId = convoData.key
+                    const chatId = convoData.chatId
+
+                return <BoxConvo
+                            title={convoData.convoName}
+                            subTitle={convoData.latestMessageText}
+                            date={convoData.updatedAt}
+                            chatName={convoData.chat}
+                            onPress={() => props.navigation.navigate("ChatScreen", { chatId, convoId })}
+                        />
+                }}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                bounces={false}
+
+            /> 
 
             <View style={styles.groupContainer}>
                 <Text style={styles.groupText}>Groups</Text>
@@ -137,6 +197,7 @@ const ChatListScreen = props => {
                             />
                 }}
             />
+            </View>
         </PageContainer>
 };
 

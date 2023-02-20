@@ -4,6 +4,7 @@ import { getFirebaseApp } from "../firebaseHelper";
 import { getUserPushTokens } from "./authActions";
 import { addUserChat, deleteUserChat, getUserChats } from "./userActions";
 import keys from '../../constants/keys';
+import { createIconSetFromFontello } from '@expo/vector-icons';
 
 
 export const sendQuestionGPT3 = async (convoId, chatId, senderId, question) => {
@@ -48,7 +49,7 @@ export const sendQuestionGPT3 = async (convoId, chatId, senderId, question) => {
         await update(convoRef, {
             updatedBy: senderId,
             updatedAt: new Date().toISOString(),
-            latestAIText: answer
+            latestMessageText: answer
         });
 
     } catch (e) {
@@ -63,7 +64,7 @@ export const createChat = async (loggedInUserId, chatData) => {
 
     const newChatData = {
         ...chatData,
-        numberUsers: chatData.users.length,
+        //numberUsers: chatData.users.length,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
@@ -80,16 +81,26 @@ export const createChat = async (loggedInUserId, chatData) => {
         await push(child(dbRef, `userChats/${userId}`), newChat.key);
         //await push(child(dbRef, `userGroups/${userId}`), newGroup.key);
     }
-    
+    console.log("should not log 5")
+
     return newChat.key;
 }
 
 export const createConvo = async (loggedInUserId, chatData, chatId) => {
 
+   
+    const app = getFirebaseApp();
+    
+    const dbRef = ref(getDatabase(app));
+    
+    const convosRef = child(dbRef, `convos/${chatId}`);
+   
+    
     const convoData = {
         convoName:  "Convo",
-        category: "New Convo",
-        latestAIText: "No AI conversation yet",
+        category: "Convos",
+        chat: chatData.isGroupChat ? chatData.chatName : 'Chat',
+        chatId: chatId,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
@@ -97,12 +108,10 @@ export const createConvo = async (loggedInUserId, chatData, chatId) => {
         // userMap: [loggedInUserId],
         // colorMap: ["#FF6653"]
     };
-
-    const app = getFirebaseApp();
-    const dbRef = ref(getDatabase(app));
-    const newConvo = child(dbRef, `convos/${chatId}`);
-    const convoKey = await push(newConvo, convoData);
+   
+    const convoKey = await push(convosRef, convoData);
     
+ 
     return convoKey.key;
 }
 

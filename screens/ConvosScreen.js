@@ -53,12 +53,28 @@ const ConvosScreen = (props) => {
     return otherUserData && `${otherUserData.firstName} ${otherUserData.lastName}`;
   }
 
+  function getRandomColor() {
+    const colors = ['#6653FF', '#53FF66', '#FF6653', '#BC53FF', '#19C37D', '#FFFF66', 'teal', '#FF6EFF', '#FF9933', '#50BFE6', "#00468C"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+
+
   useEffect(() => {
     if (!chatData) return;
 
-    
+    const leftTitle = chatData.chatName ?? getChatTitleFromName();
     props.navigation.setOptions({
-      headerTitle: chatData.chatName ?? getChatTitleFromName(),
+      headerTitle: leftTitle,
+      headerTintColor: 'white',
+      headerStyle: {
+        backgroundColor: '#0E1528', 
+      },
+      headerLeft: () => {
+          <TouchableOpacity onPress={() => props.navigation.goBack()}>
+            <PageTitle text={leftTitle} />
+          </TouchableOpacity>
+      },
       headerRight: () => {
         return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
           {
@@ -79,19 +95,62 @@ const ConvosScreen = (props) => {
 
   const handlePressConvo = (convoKey) => {
     setConvoId(convoKey);
-    props.navigation.navigate("ChatScreen", { convoId: convoKey, chatId: chatId, newChatData: chatData });
+    props.navigation.navigate("ChatScreen", { convoId: item.key, chatId: chatId, newChatData: chatData });
   }
 
+  const sortedConvos = chatConvos.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+
   return <PageContainer>
-      <PageTitle text="Conversations" />
-      
-        <View>
-          <TouchableOpacity onPress={() => {}}>
-              <Text style={styles.newGroupText}>New Category</Text>
-          </TouchableOpacity>
-        </View>
+
+            <View style={styles.groupContainer}>
+                <Text style={styles.groupText}>Conversations</Text>
+
+                <View style={styles.rightContainer}>
+
+                    <TouchableOpacity onPress={() => props.navigation.navigate("NewChat", { isGroupChat: true })} style={styles.button}>
+                        <Text style={styles.buttonText}>New Convo</Text>
+                    </TouchableOpacity>
+
+                </View>
+            </View>
+
+            <FlatList
+              data={sortedConvos}
+              renderItem= {({ item }) => (
+
+                <View>
+                  <View style={styles.imageContainer}>
+                    
+                  </View>
+
+                  <TouchableOpacity onPress={() => props.navigation.navigate("ChatScreen", { convoId: item.key, chatId: chatId, newChatData: chatData })}>
+                      <View style={styles.textContainer}>
+
+                          <Text
+                              numberOfLines={1}
+                              style={styles.title}>
+                              {item.convoName}
+                          </Text>
+
+
+                          <Text
+                              numberOfLines={1}
+                              style={styles.subTitle}>
+                              {item.latestMessageText}
+                          </Text>
+
+
+                      </View>
+                      
+                    </TouchableOpacity>
+                </View>
+              )}
+              keyExtractor={(item) => item.key}
+            />
     
-        {Object.entries(chatConvos.reduce((obj, convo) => {
+      
+        {/* {Object.entries(chatConvos.reduce((obj, convo) => {
         if (!obj[convo.category]) obj[convo.category] = [];
         obj[convo.category].push(convo);
         return obj;
@@ -127,7 +186,7 @@ const ConvosScreen = (props) => {
             }
           />
         </View>
-))}
+))} */}
 
     
     </PageContainer>
@@ -135,63 +194,48 @@ const ConvosScreen = (props) => {
 }
 
 const styles = StyleSheet.create({
-      newGroupText: {
-        color: colors.blue,
-        fontSize: 17,
-        marginBottom: 10
+  textContainer: {
+    marginLeft: 14,
+    flex: 1
+},
+title: {
+    fontFamily: 'medium',
+    fontSize: 16,
+    letterSpacing: 0.3,
+    color: 'white',
+},
+subTitle: {
+    fontFamily: 'regular',
+    color: colors.grey,
+    letterSpacing: 0.3,
+    fontSize: 12,
+    marginTop:5
+},
+    groupContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
     },
-    categoryTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      marginBottom: 6,
+    groupText: {
+      fontSize: 19,
+      fontFamily: 'bold',
+      color: 'white',
     },
-    convoContainer: {
-      margin: 10,
+    rightContainer: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end'
     },
-    card: {
-      backgroundColor: colors.primary,
-      borderRadius: 5,
-      width: 110,
-      height: 150,
-      margin: 10,
-      justifyContent: 'center',
-      alignItems: 'center',
+    button: {
+      paddingVertical: 5,
+      paddingHorizontal: 10,
     },
-    cardInner: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    convo: {
-      width: 110,
-      height: 150,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#fff',
-      borderRadius: 5,
-      padding: 5,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-    },
-    convoName: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 5,
-    },
-    latestAIText: {
-      fontSize: 13,
-      color: '#666',
-      marginBottom: 5,
-    },
-    latestMessageText: {
-      fontSize: 10,
-      color: '#999',
-      marginBottom: 5,
+    buttonText: {
+      fontSize: 12,
+      fontFamily: 'medium',
+      color: 'white',
+      backgroundColor: 'transparent',
+      mixBlendMode: 'overlay',
+      opacity: 0.5,
     },
 });
 

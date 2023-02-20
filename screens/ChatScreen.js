@@ -62,7 +62,6 @@ const ChatScreen = (props) => {
 
   const chatMessages = useSelector(state => {
     if (!convoId) return [];
-
     const chatMessagesData = state.messages.messagesData[convoId];
 
     if (!chatMessagesData) return [];
@@ -93,8 +92,10 @@ const ChatScreen = (props) => {
 
   useEffect(() => {
     if (!chatData) return;
+    
    
     props.navigation.setOptions({
+      //if chatData.chatName is undefined then call getChat...
       headerTitle: chatData.chatName ?? getChatTitleFromName(), //convoData.convoName ?? getChatTitleFromName() chatData.chatName ?? getChatTitleFromName(),
       headerTintColor: 'white',
       headerStyle: {
@@ -136,15 +137,17 @@ const ChatScreen = (props) => {
   const sendMessage = useCallback(async () => {
 
     try {
-      
       let id = chatId;
       let id2 = convoId;
       if (!id) {
         console.log("about to create a chat")
         // No chat Id. Create the chat
-        id = await createChat(userData.userId, props.route.params.newChatData);
+        id = await createChat(userData.userId, chatData);
+      
         setChatId(id);
-        id2 = await createConvo(userData.userId, props.route.params.newChatData, id);
+        console.log("id: ", id)
+        id2 = await createConvo(userData.userId, chatData, id);
+    
         setConvoId(id2);
       }
 
