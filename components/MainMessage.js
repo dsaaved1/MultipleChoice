@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         flexDirection: 'row',
         alignItems: 'flex-start',
-        flex: 1
+        flex: 1,
     },
     profileContainer: {
         marginRight: 15,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
       },
     text: {
         letterSpacing: 0.3,
-        fontFamily :'blackLato',
+        fontFamily :'bold',
         color:'white'
     },
     menuItemContainer: {

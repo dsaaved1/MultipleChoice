@@ -11,7 +11,7 @@ import { updateLoggedInUserData } from '../store/authSlice';
 import { updateChatData } from '../utils/actions/chatActions';
 
 const ProfileImage = props => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch()
 
     const source = props.uri ?  { uri: props.uri } : userImage;
 
@@ -94,8 +94,8 @@ const ProfileImage = props => {
 
 const styles = StyleSheet.create({
     image: {
-        borderRadius: 50,
-        borderColor: colors.primary,
+        borderRadius: 20,
+        borderColor: '#979797',
         borderWidth: 1
     },
     editIconContainer: {

@@ -7,6 +7,7 @@ import keys from '../../constants/keys';
 import { createIconSetFromFontello } from '@expo/vector-icons';
 
 
+
 export const sendQuestionGPT3 = async (convoId, chatId, senderId, question) => {
     const { Configuration, OpenAIApi } = require('openai')
     const configuration = new Configuration({
@@ -141,6 +142,9 @@ export const sendImage = async (convoId, chatId, senderData, imageUrl, replyTo, 
     await sendPushNotificationForUsers(otherUsers, `${senderData.firstName} ${senderData.lastName}`, `${senderData.firstName} sent an image`, chatId, convoId);
 }
 
+
+
+
 export const updateChatNameData = async (chatId, userId, chatData) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
@@ -183,6 +187,7 @@ export const updateChatDataSettings = async (chatId, userId, chatData) => {
 //     })
 // }
 
+
 export const updateChatData = async (chatId, userId, chatData) => {
     const app = getFirebaseApp();
     const dbRef = ref(getDatabase(app));
@@ -202,9 +207,19 @@ export const updateChatData = async (chatId, userId, chatData) => {
             updatedBy: userId
         })
     }
-    
+
+}
 
 
+
+export const updateConvoData = async (convoId, chatId, newConvoName) => {
+    const app = getFirebaseApp();
+    const dbRef = ref(getDatabase(app));
+    const convoRef = child(dbRef, `convos/${chatId}/${convoId}`);
+    await update(convoRef, {
+        convoName: newConvoName,
+        updatedAt: new Date().toISOString(),
+    });
 }
 
 const sendMessage = async (convoId, chatId, senderId, messageText, imageUrl, replyTo, type) => {

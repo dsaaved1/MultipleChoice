@@ -17,7 +17,7 @@ const ChatListScreen = props => {
     const userData = useSelector(state => state.auth.userData);
     const storedUsers = useSelector(state => state.users.storedUsers);
 
-    
+
     const userConvos = []
 
     const userChats = useSelector(state => {
@@ -100,7 +100,7 @@ const ChatListScreen = props => {
         
         
 
-        props.navigation.navigate("ChatScreen", navigationProps);
+        props.navigation.navigate("ChatScreen", navigationProps)
 
     }, [props.route?.params])
 
@@ -112,7 +112,7 @@ const ChatListScreen = props => {
 
             <View>
 
-            <Text  style={[styles.groupText, { paddingTop: 20 }]}>Continue Working</Text>
+            <Text  style={[styles.groupText, { paddingVertical: 10 }]}>Continue Working</Text>
 
             <FlatList
                 data={latestConvos}

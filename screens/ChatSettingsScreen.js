@@ -180,7 +180,7 @@ const ChatSettingsScreen = props => {
 
             
             {/* <DataItem
-            // this will be for convoSettings because that's how we acess tthe messages in DataListScreen: const { convoId, messageId } = starData;
+            // this will be for convoSettings in ChatScreen because that's how we acess tthe messages in DataListScreen: const { convoId, messageId } = starData;
                 type={"link"}
                 title="Starred messages"
                 hideImage={true}

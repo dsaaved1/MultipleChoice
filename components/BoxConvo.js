@@ -46,13 +46,13 @@ const BoxConvo = props => {
         mainContainer:{
         },
       container: {
-        borderWidth: 1,
+        borderWidth: 3,
         borderRadius: 20,
         padding: 10,
-        margin: 15,
+        margin: 7,
         backgroundColor: '#1C2337',
-        height: 113,
-        width: 170
+        height: 134,
+        width: 178
       },
       header: {
         flexDirection: 'row',
@@ -76,7 +76,7 @@ const BoxConvo = props => {
         alignItems: 'center',
       },
       title: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
         color: 'white'

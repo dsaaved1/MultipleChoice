@@ -17,8 +17,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 
-import backgroundImage from "../assets/images/droplet.jpeg";
 import colors from "../constants/colors";
 import openAIAvatar from '../assets/images/openai-avatar.png';
 
@@ -31,20 +31,21 @@ import { useSelector } from "react-redux";
 import { createChat, createConvo, sendImage, sendTextMessage, sendAIMessage, sendQuestionGPT3 } from "../utils/actions/chatActions";
 import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
 import AwesomeAlert from 'react-native-awesome-alerts';
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
-import CustomHeaderButton from "../components/CustomHeaderButton";
+import { updateConvoData } from '../utils/actions/chatActions';
+
 
 const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
   const [messageText, setMessageText] = useState("");
-  const [activeAI, setActiveAI] = useState(false);
-  const [nameAI, setNameAI] = useState('GPT-3');
   const [chatId, setChatId] = useState(props.route?.params?.chatId);
   const [convoId, setConvoId] = useState(props.route?.params?.convoId);
   const [errorBannerText, setErrorBannerText] = useState("");
   const [replyingTo, setReplyingTo] = useState();
   const [tempImageUri, setTempImageUri] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAI, setActiveAI] = useState(false);
+  const [editing, setEditing] = useState(false)
+  const [nameAI, setNameAI] = useState('GPT-3');
 
   //we use this to create a reference to component
   // and scrolling the chat to the bottom new message
@@ -55,10 +56,9 @@ const ChatScreen = (props) => {
   const storedChats = useSelector(state => state.chats.chatsData);
   //chatData is null when we don't a chatID because we haven't started a conversation yet
   const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
-  
-
-  // const convoData = (chatId && convoId && useSelector(state => state.convos.convosData[chatId][convoId])) || props.route?.params?.newChatData || {};
-  // console.log(convoId, " convoId")
+  const convoRef = (chatId && useSelector(state => state.convos.convosData[chatId])) || {};
+  const convoData = convoRef[convoId]
+  const [title, setTitle] = useState(convoData ? convoData.convoName : "Convo");
 
   const chatMessages = useSelector(state => {
     if (!convoId) return [];
@@ -92,45 +92,55 @@ const ChatScreen = (props) => {
 
   useEffect(() => {
     if (!chatData) return;
-    
-   
+
+    const subTitle = chatData.chatName ?? getChatTitleFromName();
+    const modifiable = chatId? true : false
+  
     props.navigation.setOptions({
-      //if chatData.chatName is undefined then call getChat...
-      headerTitle: chatData.chatName ?? getChatTitleFromName(), //convoData.convoName ?? getChatTitleFromName() chatData.chatName ?? getChatTitleFromName(),
-      headerTintColor: 'white',
+      headerTitle: () => (
+        <View style={{ alignItems: 'center', margin: 5 }}>
+          {editing?
+           <TextInput style={{ color: 'white', fontSize: 20, fontWeight: 'medium' }}
+           autoFocus={true}
+           onChangeText={text => setTitle(text)}
+           value={title}></TextInput>
+          :
+          <Text style={{ color: 'white', fontSize: 20, fontWeight: 'medium' }}>
+            {title}
+          </Text>
+          }
+          <Text style={{ color: '#979797', fontSize: 12, fontWeight: 'regular' }}>
+            {subTitle}
+          </Text>
+        </View>
+      ),
       headerStyle: {
-        backgroundColor: '#0E1528', // set the background color
-        elevation: 5, // set the elevation to add shadow
-        shadowOpacity: 0.5,
-        marginBottom: 10, // add margin to the bottom of the header
-        borderBottomColor: 'grey', // add a bottom border to the header
-        borderBottomWidth: 0.5, // set the width of the bottom border
+        backgroundColor: '#0E1528', 
       },
-      headerTitleStyle: {
-        color: 'white', // set the header title color
-        fontSize: 20, // set the font size
-        fontWeight: 'medium', // set the font weight
-      },
-    
-      // headerRight: () => {
-      //   return <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-      //     {
-      //       //we will put this again after adding contributors functionality
-      //       chatId && 
-      //       <Item
-      //         title="Chat settings"
-      //         iconName="settings-outline"
-      //         onPress={() => chatData.isGroupChat ?
-      //           // we will send convoId to chatSetting to display the message when we deal with contributors
-      //           props.navigation.navigate("ChatSettings", { chatId, convoId }) :
-      //           props.navigation.navigate("Contact", { uid: chatUsers.find(uid => uid !== userData.userId) })}
-      //       />
-      //     }
-      //   </HeaderButtons>
-      // }
+      headerRight: modifiable ? 
+    () => {
+      if (editing) {
+        return (
+          <TouchableOpacity onPress={() => {
+            updateConvoData(convoId,chatId,title);
+            setEditing(false);
+          }}>
+            <AntDesign name="checkcircleo" size={24} color='#979797'/>
+          </TouchableOpacity>
+        );
+      } else {
+        return (
+          <TouchableOpacity onPress={() => setEditing(true)}>
+            <Feather name="edit-3" size={24} color='#979797' />
+          </TouchableOpacity>
+        );
+        }
+    } : null
+
     })
     setChatUsers(chatData.users)
-  }, [chatUsers])
+    //editing is passed because I wanted to be the page reload after editing is change inside useEffect
+  }, [chatUsers,editing, title])
 
 
 
@@ -154,6 +164,7 @@ const ChatScreen = (props) => {
       if (activeAI){
           console.log("about to send ai questions")
           await sendAIMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
+          setMessageText("");
           await sendQuestionGPT3(id2, id, userData.userId, messageText)
       } else {
         console.log("about to send normal questions")
@@ -454,7 +465,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
-    backgroundColor:'#27272C'
+    backgroundColor:'#27272C',
   },
   screen: {
     flex: 1
