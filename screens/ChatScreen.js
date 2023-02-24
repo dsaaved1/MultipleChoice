@@ -124,7 +124,6 @@ const ChatScreen = (props) => {
       return <SubmitButton
                 title="Logout"
                 onPress={() => dispatch(userLogout(userData)) }
-                style={{ marginTop: 20 }}
                 color={colors.red}/>
     } 
 

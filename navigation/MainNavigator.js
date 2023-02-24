@@ -1,14 +1,9 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useRef, useState } from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
 
-import ChatSettingsScreen from "../screens/ChatSettingsScreen";
-import SettingsScreen from "../screens/SettingsScreen";
-import ChatListScreen from "../screens/ChatListScreen";
 import ChatScreen from "../screens/ChatScreen";
-import NewChatScreen from "../screens/NewChatScreen";
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useDispatch, useSelector } from "react-redux";
 import { getFirebaseApp } from "../utils/firebaseHelper";
@@ -20,10 +15,8 @@ import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
 import { setStoredUsers } from "../store/userSlice";
 import { setChatMessages, setStarredMessages } from "../store/messagesSlice";
-import ContactScreen from "../screens/ContactScreen";
-import DataListScreen from "../screens/DataListScreen";
 import { StackActions, useNavigation } from '@react-navigation/native';
-import ConvosScreen from '../screens/ConvosScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -41,39 +34,7 @@ const StackNavigator = () => {
             headerBackTitle: "Back",
           }}
         />
-        <Stack.Screen
-          name="ChatSettings"
-          component={ChatSettingsScreen}
-          options={{
-            headerTitle: "",
-            headerBackTitle: "Back",
-            headerShadowVisible: false
-          }}
-        />
-        <Stack.Screen
-          name="Contact"
-          component={ContactScreen}
-          options={{
-            headerTitle: "Contact info",
-            headerBackTitle: "Back",
-          }}
-        />
-        <Stack.Screen
-          name="DataList"
-          component={DataListScreen}
-          options={{
-            headerTitle: "",
-            headerBackTitle: "Back",
-          }}
-        />
-        <Stack.Screen
-          name="Convos"
-          component={ConvosScreen}
-          options={{
-            headerTitle: "",
-            headerBackTitle: "Back",
-          }}
-        />
+  
       </Stack.Group>
 
     
