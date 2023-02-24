@@ -99,15 +99,12 @@ export const createConvo = async (loggedInUserId, chatData, chatId) => {
     
     const convoData = {
         convoName:  "Convo",
-        category: "Convos",
-        chat: chatData.isGroupChat ? chatData.chatName : 'Chat',
+        chat: 'Chat',
         chatId: chatId,
         createdBy: loggedInUserId,
         updatedBy: loggedInUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        // userMap: [loggedInUserId],
-        // colorMap: ["#FF6653"]
     };
    
     const convoKey = await push(convosRef, convoData);

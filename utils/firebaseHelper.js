@@ -8,13 +8,12 @@ import { initializeApp } from "firebase/app";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const getFirebaseApp = () => {
     const firebaseConfig = {
-        apiKey: "AIzaSyDFhxESXl9Z7o37S70EMd6pILzBVhdrDD8",
-        authDomain: "helloai2.firebaseapp.com",
-        projectId: "helloai2",
-        storageBucket: "helloai2.appspot.com",
-        messagingSenderId: "177152493832",
-        appId: "1:177152493832:web:701e10c486287adcea04bd",
-        measurementId: "G-KHDC4LJTG7"
+        apiKey: "AIzaSyCZPCkHt1vmemVuBLQS1jJR9XTmfApeRkI",
+        authDomain: "helloai-37cc0.firebaseapp.com",
+        projectId: "helloai-37cc0",
+        storageBucket: "helloai-37cc0.appspot.com",
+        messagingSenderId: "950875826306",
+        appId: "1:950875826306:web:b41135792dd8b92e68ec9b",
       };
       
       // Initialize Firebase

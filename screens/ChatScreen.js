@@ -3,8 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
-  ImageBackground,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -15,35 +13,34 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
 import colors from "../constants/colors";
 import openAIAvatar from '../assets/images/openai-avatar.png';
 
 import PageContainer from "../components/PageContainer";
-import Bubble from "../components/Bubble";
 import MainMessage from "../components/MainMessage";
 import ReplyTo from "../components/ReplyTo";
+import SubmitButton from '../components/SubmitButton';
 
-import { useSelector } from "react-redux";
-import { createChat, createConvo, sendImage, sendTextMessage, sendAIMessage, sendQuestionGPT3 } from "../utils/actions/chatActions";
-import { launchImagePicker, openCamera, uploadImageAsync } from "../utils/imagePickerHelper";
+import { useSelector,  useDispatch } from "react-redux";
+import { sendImage, sendAIMessage, sendQuestionGPT3 } from "../utils/actions/chatActions";
+import { launchImagePicker, uploadImageAsync } from "../utils/imagePickerHelper";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import { updateConvoData } from '../utils/actions/chatActions';
+import { userLogout } from '../utils/actions/authActions';
+
 
 
 const ChatScreen = (props) => {
   const [chatUsers, setChatUsers] = useState([]);
   const [messageText, setMessageText] = useState("");
-  const [chatId, setChatId] = useState(props.route?.params?.chatId);
-  const [convoId, setConvoId] = useState(props.route?.params?.convoId);
+  const [chatId, setChatId] = useState('-NP3_OTpM51XAqvg93wJ');
+  const [convoId, setConvoId] = useState('-NP3_OUc1yD8HnLcugXI');
   const [errorBannerText, setErrorBannerText] = useState("");
   const [replyingTo, setReplyingTo] = useState();
   const [tempImageUri, setTempImageUri] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [activeAI, setActiveAI] = useState(false);
   const [editing, setEditing] = useState(false)
   const [nameAI, setNameAI] = useState('GPT-3');
 
@@ -51,20 +48,18 @@ const ChatScreen = (props) => {
   // and scrolling the chat to the bottom new message
   const flatList = useRef();
 
+  const dispatch = useDispatch();
+
   const userData = useSelector(state => state.auth.userData);
   const storedUsers = useSelector(state => state.users.storedUsers);
   const storedChats = useSelector(state => state.chats.chatsData);
-  //chatData is null when we don't a chatID because we haven't started a conversation yet
-  const chatData = (chatId && storedChats[chatId]) || props.route?.params?.newChatData || {};
-  const convoRef = (chatId && useSelector(state => state.convos.convosData[chatId])) || {};
+  const chatData = (chatId && storedChats[chatId])
+  const convoRef = (chatId && useSelector(state => state.convos.convosData[chatId]))
   const convoData = convoRef[convoId]
-  const [title, setTitle] = useState(convoData ? convoData.convoName : "Convo");
+  const [title, setTitle] = useState(convoData.convoName);
 
   const chatMessages = useSelector(state => {
-    if (!convoId) return [];
     const chatMessagesData = state.messages.messagesData[convoId];
-
-    if (!chatMessagesData) return [];
 
     const messageList = [];
     for (const key in chatMessagesData) {
@@ -78,23 +73,12 @@ const ChatScreen = (props) => {
 
     return messageList;
   });
-  
 
-
-  const getChatTitleFromName = () => {
-    
-    const otherUserId = chatUsers.find(uid => uid !== userData.userId);
-    const otherUserData = storedUsers[otherUserId];
-
-    return otherUserData && `${otherUserData.firstName} ${otherUserData.lastName}`;
-  }
 
 
   useEffect(() => {
-    if (!chatData) return;
 
-    const subTitle = chatData.chatName ?? getChatTitleFromName();
-    const modifiable = chatId? true : false
+    const subTitle = chatData.chatName;
   
     props.navigation.setOptions({
       headerTitle: () => (
@@ -117,7 +101,7 @@ const ChatScreen = (props) => {
       headerStyle: {
         backgroundColor: '#0E1528', 
       },
-      headerRight: modifiable ? 
+      headerRight: 
     () => {
       if (editing) {
         return (
@@ -135,12 +119,19 @@ const ChatScreen = (props) => {
           </TouchableOpacity>
         );
         }
-    } : null
+    },
+    headerLeft: () => {
+      return <SubmitButton
+                title="Logout"
+                onPress={() => dispatch(userLogout(userData)) }
+                style={{ marginTop: 20 }}
+                color={colors.red}/>
+    } 
 
     })
     setChatUsers(chatData.users)
     //editing is passed because I wanted to be the page reload after editing is change inside useEffect
-  }, [chatUsers,editing, title])
+  }, [chatUsers, editing, title])
 
 
 
@@ -149,31 +140,19 @@ const ChatScreen = (props) => {
     try {
       let id = chatId;
       let id2 = convoId;
-      if (!id) {
-        console.log("about to create a chat")
-        // No chat Id. Create the chat
-        id = await createChat(userData.userId, chatData);
-      
-        setChatId(id);
-        console.log("id: ", id)
-        id2 = await createConvo(userData.userId, chatData, id);
-    
-        setConvoId(id2);
-      }
 
-      if (activeAI){
-          console.log("about to send ai questions")
-          await sendAIMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
-          setMessageText("");
-          await sendQuestionGPT3(id2, id, userData.userId, messageText)
-      } else {
-        console.log("about to send normal questions")
-          await sendTextMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
-      } 
+      
+      console.log("about to send ai questions")
+      await sendAIMessage(id2, id, userData, messageText, replyingTo && replyingTo.key, chatUsers);
+      setMessageText("");
+      await sendQuestionGPT3(id2, id, userData.userId, messageText)
+      
 
       setMessageText("");
       setReplyingTo(null);
+
     } catch (error) {
+      
       console.log(error);
       setErrorBannerText("Message failed to send");
       setTimeout(() => setErrorBannerText(""), 5000);
@@ -195,18 +174,6 @@ const ChatScreen = (props) => {
 
 
 
-  const takePhoto = useCallback(async () => {
-    try {
-      const tempUri = await openCamera();
-      if (!tempUri) return;
-
-      setTempImageUri(tempUri);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [tempImageUri]);
-
-
 
   const uploadImage = useCallback(async () => {
     setIsLoading(true);
@@ -215,13 +182,6 @@ const ChatScreen = (props) => {
 
       let id = chatId; 
       let id2 = convoId; 
-      if (!id) {
-        // No chat Id. Create the chat
-        id = await createChat(userData.userId, props.route.params.newChatData);
-        setChatId(id);
-        id2 = await createConvo(userData.userId, props.route.params.newChatData, id);
-        setConvoId(id2);
-      }
 
       const uploadUrl = await uploadImageAsync(tempImageUri, true);
       setIsLoading(false);
@@ -244,9 +204,6 @@ const ChatScreen = (props) => {
        
           <PageContainer style={{ backgroundColor: '#0E1528'}}>
 
-            {
-              !chatId && <Bubble text="Send a message to activate your new chat!" type="system" />
-            }
 
             {
               errorBannerText !== "" && <Bubble text={errorBannerText} type="error" />
@@ -264,28 +221,17 @@ const ChatScreen = (props) => {
                 renderItem={(itemData) => {
                   const message = itemData.item;
 
-                  const isOwnMessage = message.sentBy === userData.userId;
-                  const sender = message.sentBy && storedUsers[message.sentBy];
-                  const name = sender && `${sender.firstName} ${sender.lastName}`;
-
                   let messageType;
                   let image;
                   let bigName;
-                  if (message.type && message.type === "info") {
-                    messageType = "info";
-                  } else if (message.type && message.type === "AIMessage"){
+                  if (message.type && message.type === "AIMessage"){
                     messageType = "AIMessage";
                     image = message.modelAIPhoto;
                     bigName = message.modelAI
                   } else if (message.type && message.type === "myMessageAI"){
                     messageType = "myMessageAI";
-                    image = isOwnMessage ? userData.profilePicture : sender.profilePicture
-                    bigName = isOwnMessage ? userData.firstName : name
-                  }else if (isOwnMessage) {
-                    messageType = "myMessage";
-                  }
-                  else {
-                    messageType = "theirMessage";
+                    image = userData.profilePicture
+                    bigName = userData.firstName
                   }
                    
                   
@@ -304,22 +250,6 @@ const ChatScreen = (props) => {
                             uri={image}
                             setReply={() => setReplyingTo(message)}
                             replyingTo={message.replyTo && chatMessages.find(i => i.key === message.replyTo)}
-                          />
-                  } else {
-                    return <Bubble
-                            type={messageType}
-                            text={message.text}
-                            messageId={message.key}
-                            userId={userData.userId}
-                            chatId={chatId}
-                            convoId={convoId}
-                            date={message.sentAt}
-                            name={!chatData.isGroupChat || isOwnMessage ? undefined : name}
-                            senderID={ message.sentBy ?  message.sentBy: userData.userId}
-                            //convoData={convoData ? convoData : undefined}
-                            setReply={() => setReplyingTo(message)}
-                            replyingTo={message.replyTo && chatMessages.find(i => i.key === message.replyTo)}
-                            imageUrl={message.imageUrl}
                           />
                   }
                   
@@ -345,7 +275,7 @@ const ChatScreen = (props) => {
       <View style={styles.inputContainer}>
 
           
-        {!(activeAI && messageText !== "") && (
+        {!(messageText !== "") && (
           <TouchableOpacity
             style={styles.mediaButton}
             onPress={pickImage}
@@ -354,15 +284,7 @@ const ChatScreen = (props) => {
           </TouchableOpacity>
         )}
 
-          {!(activeAI && messageText !== "") && (
-              <TouchableOpacity
-                style={styles.mediaButton}
-                onPress={takePhoto}
-              >
-                <Feather name="camera" size={25} color={'#979797'} />
-              </TouchableOpacity>
-          )}
-            
+
         
 
           <TextInput
@@ -372,52 +294,9 @@ const ChatScreen = (props) => {
             onSubmitEditing={sendMessage}
           />
 
-          
-
-          {messageText === "" && (
-  
-              <TouchableOpacity
-                style={styles.mediaButton}
-                onPress={() => setActiveAI(!activeAI)}
-              > 
-                  {activeAI?
-                    <Ionicons name="chatbubble-ellipses-outline" size={30} color={'black'} />
-                  :
-                  <Ionicons name="chatbubble-ellipses-outline" size={30} color={'#979797'} />
-                  }
-              </TouchableOpacity>
-            
-          )}
-
-            
 
 
-          {messageText === "" &&  (
-              <TouchableOpacity
-                style={styles.mediaButton}
-                onPress={() => setActiveAI(!activeAI)}
-              >
-                  {activeAI?
-                  <MaterialCommunityIcons name="robot-outline" size={30} color={'#979797'} />
-                  :
-                  <MaterialCommunityIcons name="robot-outline" size={30} color={'black'} />
-                  }
-              </TouchableOpacity>
-            )}
-
-          
-
-          {messageText !== "" && !activeAI &&(
-            <TouchableOpacity
-              style={{ ...styles.mediaButton, ...styles.sendButton }}
-              onPress={sendMessage}
-            >
-              <Feather name="send" size={20} color={"white"} />
-              
-            </TouchableOpacity>
-          )}
-
-          {messageText !== "" && activeAI &&(
+          {messageText !== "" && (
             <TouchableOpacity 
               style={styles.aiButton}
               onPress={sendMessage}>

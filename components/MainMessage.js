@@ -33,7 +33,7 @@ const MenuItem = props => {
 }
 
 const MainMessage = props => {
-    const { text, type, messageId, date, setReply, replyingTo, name, uri, chatId, convoId, userId} = props;
+    const { text, type, messageId, setReply, replyingTo, name, uri, chatId, convoId, userId} = props;
 
     const image = uri ?  { uri: uri } : userImage;
 
@@ -45,7 +45,6 @@ const MainMessage = props => {
 
     const textStyle = { ...styles.text };
     let isUserMessage = false;
-    const dateString = date && formatAmPm(date);
 
     switch (type) {
         case "myMessageAI":
@@ -96,13 +95,7 @@ const MainMessage = props => {
                         <View style={styles.nameContainer}>
                             <Text style={styles.name}>{name}</Text>
                         
-                            {
-                                dateString && type !== "info" && 
-                                <View style={styles.timeContainer}>
-                                    { isStarred && <FontAwesome name='star' size={14} color={'#8E8E93'} style={{ marginRight: 5 }} /> }
-                                    <Text style={styles.time}>{dateString}</Text>
-                                </View>
-                            }
+                    
                         </View>
                     
 

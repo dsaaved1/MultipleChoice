@@ -15,7 +15,6 @@ import { getFirebaseApp } from "../utils/firebaseHelper";
 import { child, get, getDatabase, off, onValue, ref } from "firebase/database";
 import { setChatsData } from "../store/chatSlice";
 import { setConvosData } from '../store/convoSlice';
-import { setGroupsData } from '../store/groupSlice';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
 import colors from "../constants/colors";
 import commonStyles from "../constants/commonStyles";
@@ -27,50 +26,13 @@ import { StackActions, useNavigation } from '@react-navigation/native';
 import ConvosScreen from '../screens/ConvosScreen';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
 
-const TabNavigator = () => {
-  return (
-    <Tab.Navigator 
-    screenOptions={{
-      headerTitle: "",
-      headerShadowVisible: false  
-    }}
-   
-    >
-      <Tab.Screen
-        name="ChatList"
-        component={ChatListScreen}
-        options={{
-          tabBarLabel: "Chats",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarLabel: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
 
 const StackNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Group>
-        <Stack.Screen
-          name="Home"
-          component={TabNavigator}
-          options={{ headerShown: false }}
-        />
+        
         <Stack.Screen
           name="ChatScreen"
           component={ChatScreen}
@@ -114,12 +76,6 @@ const StackNavigator = () => {
         />
       </Stack.Group>
 
-      <Stack.Group screenOptions={{ presentation: 'containedModal' }}>
-        <Stack.Screen
-          name="NewChat"
-          component={NewChatScreen}
-        />
-      </Stack.Group>
     
     </Stack.Navigator>
   )

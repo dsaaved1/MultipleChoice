@@ -129,8 +129,7 @@ const createUser = async (firstName, lastName, email, userId) => {
     await set(childRef, userData);
     const newChatData = {
             users: [userId],
-            isGroupChat: false,
-            chatName: "Me, Myself, and AI",
+            chatName: "AI",
             createdBy: userId,
             updatedBy: userId,
             createdAt: new Date().toISOString(),
@@ -141,8 +140,8 @@ const createUser = async (firstName, lastName, email, userId) => {
     await push(child(dbRef, `userChats/${userId}`), newChat.key);
 
     const convoData = {
-        convoName:  "Convo",
-        category: "New Convo",
+        convoName:  "My chat",
+        chatId: newChat.key,
         createdBy: userId,
         updatedBy: userId,
         createdAt: new Date().toISOString(),
@@ -152,7 +151,7 @@ const createUser = async (firstName, lastName, email, userId) => {
     const newConvo = child(dbRef, `convos/${newChat.key}`);
     const convoKey = await push(newConvo, convoData);
 
-    const messagesRef = child(dbRef, `messages/${convoKey.key}`);
+    child(dbRef, `messages/${convoKey.key}`);
     
 
     return userData;
