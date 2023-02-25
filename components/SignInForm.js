@@ -68,6 +68,7 @@ const SignInForm = props => {
                     autoCapitalize="none"
                     keyboardType="email-address"
                     onInputChanged={inputChangedHandler}
+                    
                     value={formState.inputValues.email}
                     errorText={formState.inputValidities["email"]} />
 

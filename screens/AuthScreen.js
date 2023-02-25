@@ -8,7 +8,7 @@ import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
 import colors from '../constants/colors';
 
-import logo from '../assets/images/logo.png';
+
 
 
 const AuthScreen = props => {
@@ -24,13 +24,7 @@ const AuthScreen = props => {
                     behavior={Platform.OS === "ios" ? "height" : undefined}
                     keyboardVerticalOffset={100}>
 
-                    <View style={styles.imageContainer}>
-                        <Image
-                            style={styles.image}
-                            source={logo}
-                            resizeMode='contain'/>
-                            
-                    </View>
+                    
 
                     {
                         isSignUp ?
@@ -65,13 +59,6 @@ const styles = StyleSheet.create({
     imageContainer: {
         justifyContent: 'center',
         alignItems: 'center'
-    },
-    image: {
-        width: '50%'
-    },
-    keyboardAvoidingView: {
-        flex: 1,
-        justifyContent: 'center'
     }
 })
 

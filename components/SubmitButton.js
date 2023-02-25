@@ -22,8 +22,8 @@ const SubmitButton = props => {
 
 const styles = StyleSheet.create({
     button: {
-        paddingHorizontal: 30,
-        paddingVertical: 10,
+        paddingHorizontal: 20,
+        paddingVertical: 5,
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center'
